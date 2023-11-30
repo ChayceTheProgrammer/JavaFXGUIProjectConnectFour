@@ -10,10 +10,11 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			VBox root = (VBox)FXMLLoader.load(getClass().getResource("Sample.fxml"));
-			Scene scene = new Scene(root,400,400);
+			VBox root = (VBox)FXMLLoader.load(getClass().getResource("ConnectFourGUI.fxml"));
+			Scene scene = new Scene(root,800,600);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
+			primaryStage.setTitle("Connect Four Window :/");
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
