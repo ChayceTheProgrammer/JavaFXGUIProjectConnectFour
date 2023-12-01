@@ -2,6 +2,7 @@ package application;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.shape.Circle;
 
@@ -9,6 +10,15 @@ public class SampleController {
 	
 	@FXML
 	private GridPane cfbGrid;
+	
+	@FXML
+	private Circle player1piece;
+	
+	@FXML
+	private Circle player2piece;
+	
+	@FXML
+	private Circle draggedCircle;
 	
 	//Shadow Data Members
 	private static int ROWS = 7;
@@ -29,23 +39,57 @@ public class SampleController {
             	//System.out.println( col );
             	//System.out.println( row );
             	
+            	// Create a circle as a marker
+                Circle draggedCircle = createCircle(row, col);
+
+            	// Set up event handlers for drag-and-drop
+                setDragAndDropHandlers(draggedCircle);
+            	
                 // Create a label as a marker
                 //Label markerLabel = createMarkerLabel(row, col);
-                Circle markerCircle = createCircle(row, col);
+                //Circle markerCircle = createCircle(row, col);
                 
                 // Add the label/circle to the GridPane
                 //cfbGrid.add(markerLabel, col, row);
-                cfbGrid.add(markerCircle, col, row);
+                //cfbGrid.add(draggedCircle, col, row);
             }
         }
     }
 	
-	
-	
 	private Circle createCircle(int row, int col) {
-		Circle circle = new Circle(10,10,10);
-		circle.setStyle("fx-border-color: black;");
+		Circle circle = new Circle(20);
+		circle.setStyle("fx-stroke: black; fx-fill: red;");
+		
 		return circle;
+	}
+	
+	private void setDragAndDropHandlers(Circle circle) {
+	    circle.setOnMousePressed(event -> onMousePressed(circle, event));
+	    circle.setOnMouseDragged(event -> onMouseDragged(circle, event));
+	    circle.setOnMouseReleased(event -> onMouseReleased(circle, event));
+	}
+
+	private void onMouseReleased(Circle circle, MouseEvent event) {
+		draggedCircle = null;
+	}
+
+	private void onMousePressed(Circle circle, MouseEvent event) {
+		draggedCircle = circle;
+        // Add any additional logic you need when the circle is pressed
+    
+	}
+
+	private void onMouseDragged(Circle circle, MouseEvent event) {
+		if (draggedCircle == circle) {
+            // Update the circle position during drag
+            circle.setCenterX(event.getX());
+            circle.setCenterY(event.getY());
+        }
+		
+	}
+
+	private void dragPlayPiece() {
+		
 	}
 
 	@SuppressWarnings("unused")
