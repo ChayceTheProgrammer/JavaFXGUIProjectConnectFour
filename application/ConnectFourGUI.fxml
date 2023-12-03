@@ -84,7 +84,7 @@
             <Label layoutX="160.0" layoutY="120.0" text="Player 2" />
             <Circle fx:id="player1piece" fill="DODGERBLUE" layoutX="78.0" layoutY="164.0" onMouseClicked="#dropDisc" onMouseReleased="#handleMouseReleased" radius="21.0" stroke="BLACK" strokeType="INSIDE" />
             <Circle fx:id="player2piece" fill="DODGERBLUE" layoutX="181.0" layoutY="164.0" onMouseClicked="#dropDisc" onMouseReleased="#handleMouseReleased" radius="21.0" stroke="BLACK" strokeType="INSIDE" />
-            <Label fx:id="turnLabel" layoutX="78.0" layoutY="58.0" text="Current Player Turn:   _" />
+            <Label fx:id="turnLabel" layoutX="78.0" layoutY="58.0" text="[Current Player Turn]" />
          </children>
       </AnchorPane>
    </children>
