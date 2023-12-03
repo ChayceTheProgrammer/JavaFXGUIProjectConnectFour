@@ -62,7 +62,7 @@ public class Controller implements Initializable {
     private static String AiPlayer = "Player AI";
     
     //instantiate a random integer
-    private int seed = new Random().nextInt(COLUMNS);
+    //private int seed = new Random().nextInt(COLUMNS);
     
     //true/false flag for whose turn it is
     private boolean isPlayerOneTurn = true;
@@ -83,6 +83,14 @@ public class Controller implements Initializable {
     //class level logWriter file to have access from various methods
     //usually these may be a bit harder to access but this project is taking 6ever
     private PrintWriter logWriter;
+    
+    //Advanced AI
+    // Define an enumeration for AI difficulty levels
+    enum AiDifficulty {
+    	//TODO Add more difficulty levels as needed
+        QUASIRANDOM, 
+        THOUGHTFUL
+    }
 
     //declare a blank GridPane object
     @FXML
@@ -114,25 +122,35 @@ public class Controller implements Initializable {
     	
         //what happens when button is clicked
         aiButton.setOnAction(event -> {
-        	//TODO implement case when AI button is clicked first so the AI can have the first turn
         	
         	if (isAllowedToInsert && !isPlayerOneTurn) {
         		
         		//pause ability to prevent issues
         		isAllowedToInsert = !isAllowedToInsert;
         		
-        		//obtain a random column value
-        		int AiMoveColumn = generateAiMoveColumn();
-        		//Developer Debugging Tool
-        		System.out.println("AiMoveColumn:" + AiMoveColumn);
-        		
-            	//Graphically Causing the move to occur
-        		//insert disc to plane at the generated column index
-        		//will be color of player 2 (not player 1 more specifically)
-        		//at quasi-randomly generated position
-        		Disc disc = new Disc(isPlayerOneTurn);
-        		insertDisc(disc, AiMoveColumn);
-        		//TODO add Disc constructor to include color so AI specifically drops a color
+        		//Set Ai Difficulty
+        		//
+        		AiDifficulty AiDiff = AiDifficulty.QUASIRANDOM;
+        		switch (AiDiff) {
+        		case QUASIRANDOM:
+        			//obtain a random column value
+	        		int AiMoveColumn = generateAiMoveColumn();
+	        		//Developer Debugging Tool
+	        		System.out.println("Quasirandon AiMoveColumn:" + AiMoveColumn);
+	        		
+	            	//Graphically Causing the move to occur
+	        		//insert disc to plane at the generated column index
+	        		//will be color of player 2 (not player 1 more specifically)
+	        		//at quasi-randomly generated position
+	        		Disc disc = new Disc(isPlayerOneTurn);
+	        		insertDisc(disc, AiMoveColumn);
+				
+        		case THOUGHTFUL:
+					break;
+					
+				default:
+					break;
+        		}
         		
         	}
         	
@@ -147,7 +165,7 @@ public class Controller implements Initializable {
     //method is used in the createPlayground() method
     private int generateAiMoveColumn() {
     	//generate a number between 0 and (COLUMNS : 6) inclusive
-    	return seed;
+    	return new Random().nextInt(6);
     }
     
     //Gaming fr
@@ -377,7 +395,7 @@ public class Controller implements Initializable {
     	//updates the player label, and initializes the game area for a new Connect Four game.
     	
     	//reset the random seed for the Ai Player
-    	seed = new Random().nextInt();
+    	//seed = new Random().nextInt();
     	
     	// clears the insertedDiscsPane to remove all the 
     	// previously inserted discs from the game board.
@@ -565,6 +583,7 @@ public class Controller implements Initializable {
     }
         // placement validator of piece at a row/col
 
+    //This method assists with validation 
     private Disc getDiscIfPresent(int row, int column) {    
     	
     	// check statement for if row or column index is invalid
@@ -627,7 +646,8 @@ public class Controller implements Initializable {
             }
         });
     }
-
+    
+    //TODO add Disc constructor to include color so AI specifically drops a color
     /*this method creates a disc which, graphically will look like a circle
       has all properties of a Circle but extends with one more method */
     private static class Disc extends Circle {
