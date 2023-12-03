@@ -62,12 +62,12 @@ public class Main extends Application {
         MenuItem getMoveLog = new MenuItem("Move Log");
         getMoveLog.setOnAction(event -> controller.getMoveLog());
 
-        //
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
+        
         MenuItem exitGame = new MenuItem("Exit game");
         exitGame.setOnAction(event -> exitGame());
 
-        fileMenu.getItems().addAll(newGame, resetGame, separatorMenuItem, exitGame);
+        fileMenu.getItems().addAll(newGame, resetGame, separatorMenuItem, exitGame, getMoveLog);
 
         // Help Menu
         Menu helpMenu = new Menu("Help");

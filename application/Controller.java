@@ -59,10 +59,10 @@ public class Controller implements Initializable {
     private static String SecondPlayer = "Player Two";
 
     //AI player name, members, methods
-    private static String AiPlayerName = "Player AI";
+    private static String AiPlayer = "Player AI";
     
-    //instantiate a random object
-    private Random randomNum = new Random();
+    //instantiate a random integer
+    private int seed = new Random().nextInt(COLUMNS);
     
     //true/false flag for whose turn it is
     private boolean isPlayerOneTurn = true;
@@ -73,11 +73,12 @@ public class Controller implements Initializable {
     //shadow data structure of player pieces AKA discs
     private Disc[][] insertedDiscsArray = new Disc[ROWS][COLUMNS];
     
-    //distinct extender for the logfile
-    private static String RandomFileNameExtender = new Random(26812).toString();
+    //pseudorandom distinct extender for the log file name
+    private static Integer RandomFileNameExtender = new Random().nextInt();
+    private static String fileExtStr = RandomFileNameExtender.toString();
     
     //log file name
-    private static final String LOG_FILE_PATH = "connet4gamelog-" + RandomFileNameExtender + "-.txt";
+    private static final String LOG_FILE_PATH = "connet4gamelog-" + fileExtStr + "-.txt";
     
     //class level logWriter file to have access from various methods
     //usually these may be a bit harder to access but this project is taking 6ever
@@ -102,6 +103,10 @@ public class Controller implements Initializable {
     @FXML
     //standard naming convention for handling UI events in JavaFX
     private void handleAiButtonClick() {
+    	
+    	//remove multiplayer
+    	SecondPlayer = AiPlayer;
+    	
     	//Developer Note: Visual Console FeedBack
     	System.out.println("AI Move");
     	
@@ -114,7 +119,7 @@ public class Controller implements Initializable {
         	if (isAllowedToInsert && !isPlayerOneTurn) {
         		
         		//pause ability to prevent issues
-        		isAllowedToInsert = false;
+        		isAllowedToInsert = !isAllowedToInsert;
         		
         		//obtain a random column value
         		int AiMoveColumn = generateAiMoveColumn();
@@ -129,8 +134,6 @@ public class Controller implements Initializable {
         		insertDisc(disc, AiMoveColumn);
         		//TODO add Disc constructor to include color so AI specifically drops a color
         		
-        		//return status back to normal
-        		isAllowedToInsert = true;
         	}
         	
         });
@@ -144,7 +147,7 @@ public class Controller implements Initializable {
     //method is used in the createPlayground() method
     private int generateAiMoveColumn() {
     	//generate a number between 0 and (COLUMNS : 6) inclusive
-    	return randomNum.nextInt(COLUMNS);
+    	return seed;
     }
     
     //Gaming fr
@@ -374,7 +377,7 @@ public class Controller implements Initializable {
     	//updates the player label, and initializes the game area for a new Connect Four game.
     	
     	//reset the random seed for the Ai Player
-    	randomNum = new Random();
+    	seed = new Random().nextInt();
     	
     	// clears the insertedDiscsPane to remove all the 
     	// previously inserted discs from the game board.
@@ -678,11 +681,16 @@ public class Controller implements Initializable {
     	
     }
     
-    //This method is going to log systematically log a move to the file
+    //This method is going to log systematically to the file
     private void logMove(String playerName, int col, int row) {
     	if(logWriter != null) {
     		logWriter.write("Player: " + playerName + " Played Position (Column, Row): (" + col + ", " + row);
     	}
     }
+
+	public Object getMoveLog() {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }
