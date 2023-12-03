@@ -26,6 +26,11 @@ import javafx.scene.control.ButtonType;
 import javafx.fxml.FXML;
 import java.util.Random;
 
+//Imports relating to file IO and THE LOG
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class Controller implements Initializable {
 	
 	//number of colums
@@ -59,7 +64,6 @@ public class Controller implements Initializable {
     //instantiate a random object
     private Random randomNum = new Random();
     
-
     //true/false flag for whose turn it is
     private boolean isPlayerOneTurn = true;
     
@@ -67,9 +71,19 @@ public class Controller implements Initializable {
     private boolean isAllowedToInsert = true;   
 
     //shadow data structure of player pieces AKA discs
-    private Disc[][] insertedDiscsArray = new Disc[ROWS][COLUMNS];  
+    private Disc[][] insertedDiscsArray = new Disc[ROWS][COLUMNS];
+    
+    //distinct extender for the logfile
+    private static String RandomFileNameExtender = new Random(26812).toString();
+    
+    //log file name
+    private static final String LOG_FILE_PATH = "connet4gamelog-" + RandomFileNameExtender + "-.txt";
+    
+    //class level logWriter file to have access from various methods
+    //usually these may be a bit harder to access but this project is taking 6ever
+    private PrintWriter logWriter;
 
-    //declate a blank GridPane object
+    //declare a blank GridPane object
     @FXML
     public GridPane rootGridPane;
 
@@ -81,6 +95,7 @@ public class Controller implements Initializable {
     @FXML
     public Label playerNameLabel;
     
+    //graphical component of Ai player prompt
     @FXML
     public Button aiButton;
     
@@ -97,22 +112,27 @@ public class Controller implements Initializable {
         	//TODO implement case when AI button is clicked first so the AI can have the first turn
         	
         	if (isAllowedToInsert && !isPlayerOneTurn) {
-        		//after prior code
+        		
+        		//pause ability to prevent issues
         		isAllowedToInsert = false;
+        		
         		//obtain a random column value
         		int AiMoveColumn = generateAiMoveColumn();
-        		//Developer Tool
-        		System.out.println(AiMoveColumn);
+        		//Developer Debugging Tool
+        		System.out.println("AiMoveColumn:" + AiMoveColumn);
         		
             	//Graphically Causing the move to occur
-            	//Second Players Turn
         		//insert disc to plane at the generated column index
         		//will be color of player 2 (not player 1 more specifically)
         		//at quasi-randomly generated position
         		Disc disc = new Disc(isPlayerOneTurn);
         		insertDisc(disc, AiMoveColumn);
         		//TODO add Disc constructor to include color so AI specifically drops a color
+        		
+        		//return status back to normal
+        		isAllowedToInsert = true;
         	}
+        	
         });
     	
 
@@ -156,13 +176,19 @@ public class Controller implements Initializable {
         rootGridPane.add(aiButton, 1, 1); 
         
         //Game State of AI Move is pressed first
-        if(isAllowedToInsert && !isPlayerOneTurn) {
-        	isAllowedToInsert = false;
+        if(isAllowedToInsert) {
+        	if(isPlayerOneTurn) {
+        		return;
+        	}
+        	
+        	//first column choice of Ai
         	int initialAiMoveColumn = generateAiMoveColumn();
         	
         	//TODO Update intantiation with AI specific parameters as needed
-        	Disc disc = new Disc(isPlayerOneTurn);
+        	Disc disc = new Disc(!isPlayerOneTurn);
         	insertDisc(disc, initialAiMoveColumn);
+        	
+        	isAllowedToInsert = !isAllowedToInsert;
         }
         
         
@@ -375,6 +401,11 @@ public class Controller implements Initializable {
         //This method sets up the game board and clickable columns (mentioned prior).
         createPlayground();
         
+        //close log file
+        if(logWriter != null) {
+        	logWriter.close();
+        }
+        
     }
    
     
@@ -424,8 +455,9 @@ public class Controller implements Initializable {
         // Set the initial position of the disc
         disc.setTranslateX(column * (diameterOfCircle + 5) + diameterOfCircle / 4);
 
-        //Local Integer Copy of Row because we can always use a reference (pointers who??)
+        //Local Integer Copy of Col/Row because we can always use a reference (pointers who??)
         int currentRow = row;
+        int currentCol = column;
         
         /*	An event handler is set to be called when the transition finishes. 
         	It allows the next player to insert a disc (isAllowedToInsert is set to true).
@@ -473,7 +505,7 @@ public class Controller implements Initializable {
             //Calls the gameEnded method with the current row and column as arguments. 
             //This method is responsible for determining whether the game has reached 
             //a conclusion based on the latest move.
-            if (gameEnded(currentRow, column)) {
+            if (gameEnded(currentRow, currentCol)) {
                 gameOver();
             }
 
@@ -486,6 +518,8 @@ public class Controller implements Initializable {
             // Updates the graphical representation of the current player's status on the label (playerNameLabel).
             playerNameLabel.setText(isPlayerOneTurn? FirstPlayer: SecondPlayer);
         
+            //TODO Update Log File Features
+            logMove(isPlayerOneTurn ? FirstPlayer : SecondPlayer, currentCol, currentRow);
         });
         
         //initiates the execution of the translation animation. This starts the smooth movement of the disc to its final position.
@@ -581,6 +615,7 @@ public class Controller implements Initializable {
             if (buttonClicked.isPresent() && buttonClicked.get() == yesButton ) {
                 // user chose YES so RESET the game
                 resetGame();
+                
             } else {
                 // user chose NO 
                 Platform.exit();
@@ -627,19 +662,27 @@ public class Controller implements Initializable {
     //TODO Host Project
     	
     //Notes::
-    	//Set up UI
+    //Set up UI
+    	
+    	//Open the log file
+    	try {
+    		logWriter = new PrintWriter(new FileWriter(LOG_FILE_PATH));
+    		logWriter.write("Game Log");
+    		
+    		logWriter.close();
+    	
+    	}catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	
     	
     }
-
-    //This method is used to create a log file that can be requested by the user
-    public Object getMoveLog() {
-		// TODO Auto-generated method stub
-		return null;
-	}
     
-    //This method is used to create the log file of the entire game
-    public Object createLogFile() {
-    	//TODO Add Log Implementation
-    	return null;
+    //This method is going to log systematically log a move to the file
+    private void logMove(String playerName, int col, int row) {
+    	if(logWriter != null) {
+    		logWriter.write("Player: " + playerName + " Played Position (Column, Row): (" + col + ", " + row);
+    	}
     }
+    
 }
