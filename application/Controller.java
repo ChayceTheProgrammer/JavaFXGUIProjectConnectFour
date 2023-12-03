@@ -21,8 +21,10 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.fxml.FXML;
+import java.util.Random;
 
 public class Controller implements Initializable {
 	
@@ -33,24 +35,50 @@ public class Controller implements Initializable {
     //pretty self explanatory if you took 8th grade geometry
     private static final int diameterOfCircle = 80;
     
-    //color of player pieces (had to learn some color theory for this part)
-    private static final String discColor1 = "#24303E";
-    private static final String discColor2 = "#4CAA88";
+    //hexadecimal (0-255) color of player pieces (had to learn some color theory for this part)
+    //Common Color Values:
+    // RED    : #FF0000
+    // BLUE   : #0000FF
+    // Green  : #00FF00
+    // BLACK  : #000000
+    // WHITE  : #FFFFFF
+    // Developer Note: Background grid color is light turqoise, choose color scheme wisely
+    // Edit the FXML (Line 7) Directly or Use SceneBuilder to Modify the hex color
+    private static final String discColor1 = "#24303E"; //dark blue-gray   - R:24 G:30 B:3
+    																       //36, 48, 62
 
+    private static final String discColor2 = "#4CAA88"; //light green-blue - R:4C G:AA B:88 
+																		   //76, 170, 136
     //Names For Player
     private static String FirstPlayer = "Player One";
     private static String SecondPlayer = "Player Two";
 
-    //AI player name
-    private static String AiPlayer = "AI";
+    //AI player name, members, methods
+    private static String AiPlayer = "Player AI";
+    
+    //instantiate a random object
+    private Random randomNum = new Random();
+    
+    //this method generates a random AI move, programatically,
+    //TODO add graphic update soon
+    //method is used in the createPlayground() method
+    private int generateAiMove() {
+    	//Code Here
+    	
+    	//generate a number between 0 and (COLUMNS : 7)
+    	return randomNum.nextInt(COLUMNS);
+    }
     
     //true/false flag for whose turn it is
     private boolean isPlayerOneTurn = true;
+    
+    // Flag to avoid same color disc being added.
+    private boolean isAllowedToInsert = true;   
 
     //shadow data structure of player pieces AKA discs
     private Disc[][] insertedDiscsArray = new Disc[ROWS][COLUMNS];  
 
-    //gameboard
+    //declate a blank GridPane object
     @FXML
     public GridPane rootGridPane;
 
@@ -61,9 +89,15 @@ public class Controller implements Initializable {
     //graphical component of whose player it is on window
     @FXML
     public Label playerNameLabel;
-
-    // Flag to avoid same color disc being added.
-    private boolean isAllowedToInsert = true;   
+    
+    @FXML
+    private void handleAiButtonClick() {
+    	//Developer Note: Visual Console FeedBack
+    	System.out.println("AI Move");
+    	
+    	//TODO add to file IO, perhaps create a class and a method to simplify controller
+    }
+    
     
     //Gaming fr
     /* 
@@ -76,7 +110,7 @@ public class Controller implements Initializable {
     	//initialize gameboard
         Shape rectangleWithHoles = createGameStructuralGrid();
         
-        //add grid to window (specifically the rootGridPane which is the left half of the window
+        //add grid to window (specifically the rootGridPane)
         rootGridPane.add(rectangleWithHoles, 0, 1);
 
         //creating a list of clickable columns
@@ -86,10 +120,29 @@ public class Controller implements Initializable {
         for (Rectangle rectangle: rectangleList) {
             rootGridPane.add(rectangle, 0, 1);
         }
+        
+        //button for AI player
+        Button AiButton = new Button("AI Move");
+        AiButton.setOnAction(event -> {
+        	if (isAllowedToInsert && !isPlayerOneTurn) {
+        		//change the current player status
+        		isAllowedToInsert = false;
+        		
+        		//obtain a random column value
+        		int AiMoveColumn = generateAiMove();
+        		
+        		//insert disc to plane at the generated column index
+        		insertDisc(new Disc(isPlayerOneTurn), AiMoveColumn);
+        	}
+        });
+        
+        //Add Ai Button to the rootGridPane
+        rootGridPane.add(AiButton, 0, 1); 
     }
     
+        
     /*
-    This method uses lists of points representing the positions in vertical, 
+	This method uses lists of points representing the positions in vertical, 
     horizontal, and diagonal directions around the recently inserted disc. 
     It then calls the checkCombinations method to determine if any winning 
     combinations exist in these directions. The result boolean (isEnded) is then returned 
@@ -151,10 +204,11 @@ public class Controller implements Initializable {
         return isEnded;
     }
 
+    
     /*
-		This method dynamically creates the structural grid of the game 
-       board by adding circles at each cell position and subtracting them 
-       from the base rectangle to create holes.
+	This method dynamically creates the structural grid of the game 
+    board by adding circles at each cell position and subtracting them 
+    from the base rectangle to create holes.
     */
     private Shape createGameStructuralGrid() {
 
@@ -191,6 +245,7 @@ public class Controller implements Initializable {
 
         return rectangleWithHoles;
     }
+    
     
     /* This method is responsible for generating a list of rectangles 
       representing clickable columns in the Connect Four game. 
@@ -256,12 +311,17 @@ public class Controller implements Initializable {
         return rectangleList;
     }
     
+    
     /* This method is responsible for resetting the Connect Four game to its initial state, 
      * allowing the players to start a new game.
      */
+    
     public void resetGame() {
     	//Method clears the game board, resets player-related flags, 
     	//updates the player label, and initializes the game area for a new Connect Four game.
+    	
+    	//reset the random seed for the Ai Player
+    	randomNum = new Random();
     	
     	// clears the insertedDiscsPane to remove all the 
     	// previously inserted discs from the game board.
@@ -286,9 +346,11 @@ public class Controller implements Initializable {
 
         //It initializes the game area again by calling the createPlayground method.
         //This method sets up the game board and clickable columns (mentioned prior).
-        createPlayground(); 
+        createPlayground();
+        
     }
    
+    
     /*This method is responsible for inserting a disc into the game board when a player makes a move.
       ensures that a disc is inserted into the game board, updates the game state, 
       and provides a smooth animation for the disc drop.
@@ -439,38 +501,50 @@ public class Controller implements Initializable {
     }
     
     // placement validator of piece at a row/col
+    
     private Disc getDiscIfPresent(int row, int column) {    
     	
     	// check statement for if row or column index is invalid
         if (row >= ROWS || row < 0 || column >= COLUMNS || column < 0)  
             return null;
-
+        
+        //returns disc at specified part of shadow data structure
         return insertedDiscsArray[row][column];
     }
 
     //handles gameOver...Obviously
     private void gameOver() {
     	
-    	//
-        String winner = isPlayerOneTurn ? FirstPlayer : SecondPlayer;
+    	//ternary operator (short-hand if-else): if isPlayerOneTurn True, assigns FirstPlayer to winner, else SecondPlayer is the winner 
+        //similar to scheme: (if isPlayerOneTurn FirstPlayer SecondPlayer)
+    	String winner = isPlayerOneTurn ? FirstPlayer : SecondPlayer;
         
+        //Logging the Player
+        //TODO add file IO for logging purposes
         System.out.println("Winner is: " + winner);
+        //file io code
 
+        //UI choice to give visual feedback to users
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Connect Four");
         alert.setHeaderText("The Winner is " + winner);
         alert.setContentText("Want to play again? ");
 
+        //Code for interactive window prompt
         ButtonType yesButton = new ButtonType("Yes");
         ButtonType noButton = new ButtonType("No, Exit");
+        
+        //Updating the instance of the alert class
+        //sets button types made declared in the previous 2 line
         alert.getButtonTypes().setAll(yesButton, noButton);
 
         // Helps us to resolve IllegalStateException.
         Platform.runLater(() -> { 
         	
+        	//creates a button that can be selected by user. the alert is then process when needed
             Optional<ButtonType> buttonClicked = alert.showAndWait();
             
-            //
+            //ensuring the button clicked Exists and condition that checks if 'yes' was selected
             if (buttonClicked.isPresent() && buttonClicked.get() == yesButton ) {
                 // user chose YES so RESET the game
                 resetGame();
@@ -483,26 +557,48 @@ public class Controller implements Initializable {
         });
     }
 
+    //this method creates a disc which, graphically will look like a circle
+    //has all properties of a Circle but  extends with one more method
     private static class Disc extends Circle {
 
+    	//TODO Add File IO constructor to print disc info to file
+    	
+    	//boolean of current player turn status
         private final boolean isPlayerOneMove;
 
+        //specificed constructor to take the boolean flag
         public Disc(boolean isPlayerOneMove) {
 
+        	//this specified disc belongs to player one, boolean flag ensures property
             this.isPlayerOneMove = isPlayerOneMove;
+            
+            //graphically updating the disc radius, color, and position
             setRadius(diameterOfCircle / 2);
             setFill(isPlayerOneMove? Color.valueOf(discColor1): Color.valueOf(discColor2));
             setCenterX(diameterOfCircle/2);
             setCenterY(diameterOfCircle/2);
         }
     }
+    
 
     @Override
+    /*
+     initialize() method is used in JavaFx framework to initialize the controller
+      after the root element is processed by the FXML Loader
+      Called automatically by the FXML Loader after controller is set 
+    */
+    //this method will perform actions:
+    //Set up UI elements, variables, event handlers
+    //Overeide is the hook for setting up tasks
     public void initialize(URL location, ResourceBundle resources) {
-
+    //TODO Host Project
+    	
+    //Notes::
+    	//Set up UI
+    	
     }
 
-	public Object getMoveLog() {
+    public Object getMoveLog() {
 		//Code for getting log of moves
 		
 		// TODO Auto-generated method stub
