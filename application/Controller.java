@@ -54,7 +54,7 @@ public class Controller implements Initializable {
     private static String SecondPlayer = "Player Two";
 
     //AI player name, members, methods
-    private static String AiPlayer = "Player AI";
+    private static String AiPlayerName = "Player AI";
     
     //instantiate a random object
     private Random randomNum = new Random();
@@ -82,6 +82,9 @@ public class Controller implements Initializable {
     public Label playerNameLabel;
     
     @FXML
+    public Button aiButton;
+    
+    @FXML
     //standard naming convention for handling UI events in JavaFX
     private void handleAiButtonClick() {
     	//Developer Note: Visual Console FeedBack
@@ -89,12 +92,30 @@ public class Controller implements Initializable {
     	
     	//TODO add levels of AI-difficulty with a 'switch' Statement
     	
-    	int AiColumnSelection = generateAiMoveColumn();
+        //what happens when button is clicked
+        aiButton.setOnAction(event -> {
+        	//TODO implement case when AI button is clicked first so the AI can have the first turn
+        	
+        	if (isAllowedToInsert && !isPlayerOneTurn) {
+        		//after prior code
+        		isAllowedToInsert = false;
+        		//obtain a random column value
+        		int AiMoveColumn = generateAiMoveColumn();
+        		//Developer Tool
+        		System.out.println(AiMoveColumn);
+        		
+            	//Graphically Causing the move to occur
+            	//Second Players Turn
+        		//insert disc to plane at the generated column index
+        		//will be color of player 2 (not player 1 more specifically)
+        		//at quasi-randomly generated position
+        		Disc disc = new Disc(isPlayerOneTurn);
+        		insertDisc(disc, AiMoveColumn);
+        		//TODO add Disc constructor to include color so AI specifically drops a color
+        	}
+        });
     	
-    	//Graphically Causing the move to occur
-    	//Second Players Turn
-    	Disc disc = new Disc(!isPlayerOneTurn);
-    	insertDisc(disc, AiColumnSelection);
+
     	
     	//TODO add to file IO, perhaps create a class and a method to simplify controller
     }
@@ -105,7 +126,6 @@ public class Controller implements Initializable {
     	//generate a number between 0 and (COLUMNS : 6) inclusive
     	return randomNum.nextInt(COLUMNS);
     }
-    
     
     //Gaming fr
     /* 
@@ -130,25 +150,25 @@ public class Controller implements Initializable {
         }
         
         //button for AI player
-        Button AiButton = new Button("AI Move");
-        AiButton.setOnAction(event -> {
-        	if (isAllowedToInsert && !isPlayerOneTurn) {
-        		//change the current player status
-        		isAllowedToInsert = false;
-        		
-        		//obtain a random column value
-        		int AiMoveColumn = generateAiMoveColumn();
-        		
-        		//insert disc to plane at the generated column index
-        		insertDisc(new Disc(isPlayerOneTurn), AiMoveColumn);
-        	}
-        });
+        aiButton.setText("Ai Player");
         
         //Add Ai Button to the rootGridPane
-        rootGridPane.add(AiButton, 0, 1); 
+        rootGridPane.add(aiButton, 1, 1); 
+        
+        //Game State of AI Move is pressed first
+        if(isAllowedToInsert && !isPlayerOneTurn) {
+        	isAllowedToInsert = false;
+        	int initialAiMoveColumn = generateAiMoveColumn();
+        	
+        	//TODO Update intantiation with AI specific parameters as needed
+        	Disc disc = new Disc(isPlayerOneTurn);
+        	insertDisc(disc, initialAiMoveColumn);
+        }
+        
+        
+        
     }
     
-        
     /*
 	This method uses lists of points representing the positions in vertical, 
     horizontal, and diagonal directions around the recently inserted disc. 
@@ -465,6 +485,7 @@ public class Controller implements Initializable {
             
             // Updates the graphical representation of the current player's status on the label (playerNameLabel).
             playerNameLabel.setText(isPlayerOneTurn? FirstPlayer: SecondPlayer);
+        
         });
         
         //initiates the execution of the translation animation. This starts the smooth movement of the disc to its final position.
@@ -617,7 +638,7 @@ public class Controller implements Initializable {
 	}
     
     //This method is used to create the log file of the entire game
-    private Object createLogFile() {
+    public Object createLogFile() {
     	//TODO Add Log Implementation
     	return null;
     }
