@@ -59,16 +59,7 @@ public class Controller implements Initializable {
     //instantiate a random object
     private Random randomNum = new Random();
     
-    //this method generates a random AI move, programatically,
-    //TODO add graphic update soon
-    //method is used in the createPlayground() method
-    private int generateAiMove() {
-    	//Code Here
-    	
-    	//generate a number between 0 and (COLUMNS : 7)
-    	return randomNum.nextInt(COLUMNS);
-    }
-    
+
     //true/false flag for whose turn it is
     private boolean isPlayerOneTurn = true;
     
@@ -91,11 +82,28 @@ public class Controller implements Initializable {
     public Label playerNameLabel;
     
     @FXML
+    //standard naming convention for handling UI events in JavaFX
     private void handleAiButtonClick() {
     	//Developer Note: Visual Console FeedBack
     	System.out.println("AI Move");
     	
+    	//TODO add levels of AI-difficulty with a 'switch' Statement
+    	
+    	int AiColumnSelection = generateAiMoveColumn();
+    	
+    	//Graphically Causing the move to occur
+    	//Second Players Turn
+    	Disc disc = new Disc(!isPlayerOneTurn);
+    	insertDisc(disc, AiColumnSelection);
+    	
     	//TODO add to file IO, perhaps create a class and a method to simplify controller
+    }
+    
+    //this method generates a random AI move, programatically,
+    //method is used in the createPlayground() method
+    private int generateAiMoveColumn() {
+    	//generate a number between 0 and (COLUMNS : 6) inclusive
+    	return randomNum.nextInt(COLUMNS);
     }
     
     
@@ -129,7 +137,7 @@ public class Controller implements Initializable {
         		isAllowedToInsert = false;
         		
         		//obtain a random column value
-        		int AiMoveColumn = generateAiMove();
+        		int AiMoveColumn = generateAiMoveColumn();
         		
         		//insert disc to plane at the generated column index
         		insertDisc(new Disc(isPlayerOneTurn), AiMoveColumn);
@@ -315,7 +323,6 @@ public class Controller implements Initializable {
     /* This method is responsible for resetting the Connect Four game to its initial state, 
      * allowing the players to start a new game.
      */
-    
     public void resetGame() {
     	//Method clears the game board, resets player-related flags, 
     	//updates the player label, and initializes the game area for a new Connect Four game.
@@ -354,8 +361,6 @@ public class Controller implements Initializable {
     /*This method is responsible for inserting a disc into the game board when a player makes a move.
       ensures that a disc is inserted into the game board, updates the game state, 
       and provides a smooth animation for the disc drop.
-      this method ensures that a disc is inserted into the game board, 
-      updates the game state, and provides a smooth animation for the disc drop.
       
        this code ensures that after the dropping animation of a disc is complete, the 
        game state and player turn are updated accordingly, and the graphical representation of 
@@ -402,8 +407,7 @@ public class Controller implements Initializable {
         //Local Integer Copy of Row because we can always use a reference (pointers who??)
         int currentRow = row;
         
-        
-        /*	An event handler is set to be called when the transition finishes. In this handler:
+        /*	An event handler is set to be called when the transition finishes. 
         	It allows the next player to insert a disc (isAllowedToInsert is set to true).
         	Checks if the current move resulted in the end of the game and calls gameOver() if necessary.
         	Switches the player's turn.
@@ -413,10 +417,9 @@ public class Controller implements Initializable {
         // Create a TranslateTransition to animate the disc dropping into place
         // This code creates a TranslateTransition object, which is a JavaFX animation 
         // class used to smoothly move (translate) a JavaFX node (in this case, a disc) 
-        // from one position to another over a specified duration. Let's break down this 
-        // specific piece of code:
+        // from one position to another over a specified duration. 
         
-        //this TranslateTransition will animate the disc node from its initial position to 
+        //TranslateTransition will animate the disc node from its initial position to 
         //the specified Y-coordinate over a duration of 0.5 seconds. This creates a smooth 
         //dropping animation for the disc when it is inserted into the game board. The destination 
         //Y-coordinate is calculated based on the row where the disc is being inserted, ensuring that 
@@ -455,7 +458,10 @@ public class Controller implements Initializable {
             }
 
             //switch player turn
+            //works the same for Ai
             isPlayerOneTurn = !isPlayerOneTurn;
+            
+            //TODO Update Text for Case when Ai plays and not SecondPlayer If-Else
             
             // Updates the graphical representation of the current player's status on the label (playerNameLabel).
             playerNameLabel.setText(isPlayerOneTurn? FirstPlayer: SecondPlayer);
@@ -499,24 +505,30 @@ public class Controller implements Initializable {
         // No four consecutive discs found
         return false;
     }
-    
-    // placement validator of piece at a row/col
-    
+        // placement validator of piece at a row/col
+
     private Disc getDiscIfPresent(int row, int column) {    
     	
     	// check statement for if row or column index is invalid
-        if (row >= ROWS || row < 0 || column >= COLUMNS || column < 0)  
-            return null;
+        if (row >= ROWS || row < 0 || column >= COLUMNS || column < 0) {
+        	//Debugging State
+            System.out.println("Invalid Disc Location - Try Again");
+        	return null;
+        }
         
         //returns disc at specified part of shadow data structure
         return insertedDiscsArray[row][column];
     }
 
     //handles gameOver...Obviously
+
+    //This method Handles checking the game state
     private void gameOver() {
     	
-    	//ternary operator (short-hand if-else): if isPlayerOneTurn True, assigns FirstPlayer to winner, else SecondPlayer is the winner 
-        //similar to scheme: (if isPlayerOneTurn FirstPlayer SecondPlayer)
+    	//TODO Update Ai Winning Case
+    	
+    	//ternary operator (short-hand if-else): if isPlayerOneTurn True, assigns FirstPlayer to winner, else SecondPlayer is the winner
+    	//similar to scheme: (if isPlayerOneTurn FirstPlayer SecondPlayer)
     	String winner = isPlayerOneTurn ? FirstPlayer : SecondPlayer;
         
         //Logging the Player
@@ -528,7 +540,7 @@ public class Controller implements Initializable {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Connect Four");
         alert.setHeaderText("The Winner is " + winner);
-        alert.setContentText("Want to play again? ");
+        alert.setContentText("Want to play again?");
 
         //Code for interactive window prompt
         ButtonType yesButton = new ButtonType("Yes");
@@ -557,8 +569,8 @@ public class Controller implements Initializable {
         });
     }
 
-    //this method creates a disc which, graphically will look like a circle
-    //has all properties of a Circle but  extends with one more method
+    /*this method creates a disc which, graphically will look like a circle
+      has all properties of a Circle but extends with one more method */
     private static class Disc extends Circle {
 
     	//TODO Add File IO constructor to print disc info to file
@@ -598,10 +610,15 @@ public class Controller implements Initializable {
     	
     }
 
+    //This method is used to create a log file that can be requested by the user
     public Object getMoveLog() {
-		//Code for getting log of moves
-		
 		// TODO Auto-generated method stub
 		return null;
 	}
+    
+    //This method is used to create the log file of the entire game
+    private Object createLogFile() {
+    	//TODO Add Log Implementation
+    	return null;
+    }
 }
