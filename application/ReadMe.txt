@@ -8,7 +8,7 @@ Tasks To Complete:
 -Update GUI in SceneBuilder
 -Save/Load Feature
 
-Note From Chayce:
+Note From Chayce The Programmer:
 I imagine if you are reading this, you may be in need of assistance,
 Luckily For you, This project is overly documented to an unhealthy degree
 but take a look at the controller And you will see 2 weeks worth of staring 

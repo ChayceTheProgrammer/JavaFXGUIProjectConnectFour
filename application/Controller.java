@@ -1,35 +1,33 @@
 package application;
 
-//TODO Organize Alphabettically
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.fxml.Initializable;
+import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import java.net.URL;
-import java.util.ArrayList;
-import javafx.scene.shape.Shape;
-import javafx.util.Duration;
+
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.fxml.FXML;
-import java.util.Random;
-
-//Imports relating to file IO and THE LOG
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
+import javafx.util.Duration;
 
 public class Controller implements Initializable {
 	
@@ -47,22 +45,23 @@ public class Controller implements Initializable {
     // Green  : #00FF00
     // BLACK  : #000000
     // WHITE  : #FFFFFF
+    
+    //Example Color 1: "#24303E"  	//dark blue-gray   - R:24 G:30 B:3
+    													 //36, 48, 62
+    //Example Color 2: "#4CAA88"	//light green-blue - R:4C G:AA B:88 
+	   													 //76, 170, 136
+    
     // Developer Note: Background grid color is light turqoise, choose color scheme wisely
     // Edit the FXML (Line 7) Directly or Use SceneBuilder to Modify the hex color
-    private static final String discColor1 = "#24303E"; //dark blue-gray   - R:24 G:30 B:3
-    																       //36, 48, 62
+    private static final Color discColor1 = Color.valueOf("#0000FF"); 
 
-    private static final String discColor2 = "#4CAA88"; //light green-blue - R:4C G:AA B:88 
-																		   //76, 170, 136
+    private static final Color discColor2 = Color.valueOf("#FF0000"); 
     //Names For Player
     private static String FirstPlayer = "Player One";
     private static String SecondPlayer = "Player Two";
 
     //AI player name, members, methods
     private static String AiPlayer = "Player AI";
-    
-    //instantiate a random integer
-    //private int seed = new Random().nextInt(COLUMNS);
     
     //true/false flag for whose turn it is
     private boolean isPlayerOneTurn = true;
@@ -73,7 +72,8 @@ public class Controller implements Initializable {
     //shadow data structure of player pieces AKA discs
     private Disc[][] insertedDiscsArray = new Disc[ROWS][COLUMNS];
     
-    //pseudorandom distinct extender for the log file name
+    //pseudorandom distinct extender for the log file name,
+    //Cause nearly an endless amount of log files (approx: 2^31) 
     private static Integer RandomFileNameExtender = new Random().nextInt();
     private static String fileExtStr = RandomFileNameExtender.toString();
     
@@ -82,14 +82,15 @@ public class Controller implements Initializable {
     
     //class level logWriter file to have access from various methods
     //usually these may be a bit harder to access but this project is taking 6ever
-    private PrintWriter logWriter;
+    private BufferedWriter logWriterAlpha;
     
     //Advanced AI
     // Define an enumeration for AI difficulty levels
     enum AiDifficulty {
     	//TODO Add more difficulty levels as needed
-        QUASIRANDOM, 
-        THOUGHTFUL
+        QUASIRANDOM,   //Implemented
+        THOUGHTFUL,    //In development
+        ACTUAL_TRYHARD //Future
     }
 
     //declare a blank GridPane object
@@ -116,7 +117,7 @@ public class Controller implements Initializable {
     	SecondPlayer = AiPlayer;
     	
     	//Developer Note: Visual Console FeedBack
-    	System.out.println("AI Move");
+    	System.out.println("AI Mode Activated");
     	
     	//TODO add levels of AI-difficulty with a 'switch' Statement
     	
@@ -124,48 +125,63 @@ public class Controller implements Initializable {
         aiButton.setOnAction(event -> {
         	
         	if (isAllowedToInsert && !isPlayerOneTurn) {
-        		
         		//pause ability to prevent issues
         		isAllowedToInsert = !isAllowedToInsert;
         		
         		//Set Ai Difficulty
-        		//
         		AiDifficulty AiDiff = AiDifficulty.QUASIRANDOM;
+        		
         		switch (AiDiff) {
         		case QUASIRANDOM:
         			//obtain a random column value
-	        		int AiMoveColumn = generateAiMoveColumn();
+	        		Integer AiMoveColumn = generateAiMoveColumn();
 	        		//Developer Debugging Tool
-	        		System.out.println("Quasirandon AiMoveColumn:" + AiMoveColumn);
+	        		System.out.println("Quasirandom AiMoveColumn:" + AiMoveColumn);
 	        		
 	            	//Graphically Causing the move to occur
 	        		//insert disc to plane at the generated column index
-	        		//will be color of player 2 (not player 1 more specifically)
 	        		//at quasi-randomly generated position
-	        		Disc disc = new Disc(isPlayerOneTurn);
-	        		insertDisc(disc, AiMoveColumn);
+	        		// Run the graphical update on the JavaFX Application Thread
+	                Platform.runLater(() -> {
+	                    Disc disc = new Disc(!isPlayerOneTurn, discColor2);
+	                    try {
+	                        insertDisc(disc, AiMoveColumn);
+	                    } catch (IOException e) {
+	                        e.printStackTrace();
+	                    }
+	                });
+	        		break;
 				
         		case THOUGHTFUL:
 					break;
+        		case ACTUAL_TRYHARD:
+        			break;
 					
 				default:
 					break;
         		}
         		
+        		//revert ability to prevent issues
+        		isAllowedToInsert = !isAllowedToInsert;
         	}
-        	
         });
-    	
-
-    	
-    	//TODO add to file IO, perhaps create a class and a method to simplify controller
     }
     
+    private int getLastEmptyRow(int column) {
+        for (int row = ROWS - 1; row >= 0; row--) {
+            if (getDiscIfPresent(row, column) == null) {
+                return row;
+            }
+        }
+        // If the column is full, return -1 or handle it as appropriate for your game logic
+        return -1;
+    }
+
     //this method generates a random AI move, programatically,
     //method is used in the createPlayground() method
     private int generateAiMoveColumn() {
     	//generate a number between 0 and (COLUMNS : 6) inclusive
-    	return new Random().nextInt(6);
+    	return new Random().nextInt(COLUMNS);
     }
     
     //Gaming fr
@@ -205,15 +221,14 @@ public class Controller implements Initializable {
         	//first column choice of Ai
         	int initialAiMoveColumn = generateAiMoveColumn();
         	
-        	//TODO Update intantiation with AI specific parameters as needed
-        	Disc disc = new Disc(!isPlayerOneTurn);
-        	insertDisc(disc, initialAiMoveColumn);
+        	Disc disc = new Disc(!isPlayerOneTurn, discColor2);
+        	try {
+				insertDisc(disc, initialAiMoveColumn);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
         	
-        	isAllowedToInsert = !isAllowedToInsert;
-        }
-        
-        
-        
+        }   
     }
     
     /*
@@ -279,7 +294,6 @@ public class Controller implements Initializable {
         return isEnded;
     }
 
-    
     /*
 	This method dynamically creates the structural grid of the game 
     board by adding circles at each cell position and subtracting them 
@@ -320,7 +334,6 @@ public class Controller implements Initializable {
 
         return rectangleWithHoles;
     }
-    
     
     /* This method is responsible for generating a list of rectangles 
       representing clickable columns in the Connect Four game. 
@@ -374,7 +387,20 @@ public class Controller implements Initializable {
 					This method handles the animation and logic for dropping 
 					the disc into the specified column.
                      */
-                    insertDisc(new Disc(isPlayerOneTurn), column);
+                    
+                    //Set The discColor
+                    Color discColor;
+                    if(isPlayerOneTurn) {
+                    	discColor = discColor1;
+                    }else {
+                    	discColor = discColor2;
+                    }
+                    
+                    try {
+						insertDisc(new Disc(isPlayerOneTurn, discColor), column);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
                 }
             });
             
@@ -386,11 +412,10 @@ public class Controller implements Initializable {
         return rectangleList;
     }
     
-    
     /* This method is responsible for resetting the Connect Four game to its initial state, 
      * allowing the players to start a new game.
      */
-    public void resetGame() {
+    public void resetGame() throws IOException {
     	//Method clears the game board, resets player-related flags, 
     	//updates the player label, and initializes the game area for a new Connect Four game.
     	
@@ -422,14 +447,9 @@ public class Controller implements Initializable {
         //This method sets up the game board and clickable columns (mentioned prior).
         createPlayground();
         
-        //close log file
-        if(logWriter != null) {
-        	logWriter.close();
-        }
         
     }
    
-    
     /*This method is responsible for inserting a disc into the game board when a player makes a move.
       ensures that a disc is inserted into the game board, updates the game state, 
       and provides a smooth animation for the disc drop.
@@ -438,22 +458,11 @@ public class Controller implements Initializable {
        game state and player turn are updated accordingly, and the graphical representation of 
        the current player's status is updated on the label.
       */
-    private void insertDisc(Disc disc, int column) {
+    private void insertDisc(Disc disc, int column) throws IOException {
         
     	//starts from the bottom row and iterates upward until it finds 
     	//the first empty slot in the specified column where the disc can be inserted.
-    	int row = ROWS - 1;
-        
-        // Iterate rows until an empty row is found in the given column
-        while (row >= 0) {
-        	
-        	// Exit condition: if the current position is empty
-            if (getDiscIfPresent(row, column) == null)
-                break;
-            
-            // Loop condition: move to the row above
-            row--;
-        }
+    	int row = getLastEmptyRow(column);
         
         // If the column is full, we cannot insert any more discs
         // (the previous loop was not interrupted)
@@ -463,7 +472,8 @@ public class Controller implements Initializable {
         	return;
         }
         
-        // An empty position is found, the method updates the shadow data structure  to mark that position as occupied.
+        // An empty position is found, the method updates the shadow data structure  
+        // to mark that position as occupied.
         
         // Shadow Data Structure Update: Mark the position as occupied
         insertedDiscsArray[row][column] = disc;   
@@ -477,8 +487,8 @@ public class Controller implements Initializable {
         disc.setTranslateX(column * (diameterOfCircle + 5) + diameterOfCircle / 4);
 
         //Local Integer Copy of Col/Row because we can always use a reference (pointers who??)
-        int currentRow = row;
-        int currentCol = column;
+        Integer currentRow = row;
+        Integer currentCol = column;
         
         /*	An event handler is set to be called when the transition finishes. 
         	It allows the next player to insert a disc (isAllowedToInsert is set to true).
@@ -526,9 +536,7 @@ public class Controller implements Initializable {
             //Calls the gameEnded method with the current row and column as arguments. 
             //This method is responsible for determining whether the game has reached 
             //a conclusion based on the latest move.
-            if (gameEnded(currentRow, currentCol)) {
-                gameOver();
-            }
+
 
             //switch player turn
             //works the same for Ai
@@ -539,16 +547,39 @@ public class Controller implements Initializable {
             // Updates the graphical representation of the current player's status on the label (playerNameLabel).
             playerNameLabel.setText(isPlayerOneTurn? FirstPlayer: SecondPlayer);
         
-            //TODO Update Log File Features
-            logMove(isPlayerOneTurn ? FirstPlayer : SecondPlayer, currentCol, currentRow);
+            // Use logMove1 or logMove2 based on the current player's turn
+			if (isPlayerOneTurn) {
+				String logLine = FirstPlayer.toString() + " Moved Placed Piece at [" + currentRow.toString() + ", " + currentCol.toString()+ "]";
+			    logMove1(logLine);
+			} else {
+				String logLine2 = SecondPlayer.toString() + " Moved Placed Piece at [" + currentRow.toString() + ", " + currentCol.toString()+ "]";
+			    logMove1(logLine2);
+			}
         });
         
         //initiates the execution of the translation animation. This starts the smooth movement of the disc to its final position.
         translateTransition.play();
+        
+        if (gameEnded(currentRow, currentCol)) {
+            gameOver();
+        }
     }
+    
+    // Constructor
+    public Controller() {
+        // Initialize logWriterAlpha here
+        try {
+            
+            logWriterAlpha = new BufferedWriter(new FileWriter(LOG_FILE_PATH));
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your application's needs
+        }
 
-    //Defines a method named checkCombinations that takes a list of Point2D objects 
-    //as an argument and returns a boolean value.
+        // Other initialization code...
+    }
+    
+    /*Defines a method named checkCombinations that takes a list of Point2D objects 
+      as an argument and returns a boolean value*/
     private boolean checkCombinations(List<Point2D> points) {
     	
     	//Initializes a counter variable chain to keep track of the number of 
@@ -581,7 +612,6 @@ public class Controller implements Initializable {
         // No four consecutive discs found
         return false;
     }
-        // placement validator of piece at a row/col
 
     //This method assists with validation 
     private Disc getDiscIfPresent(int row, int column) {    
@@ -589,20 +619,22 @@ public class Controller implements Initializable {
     	// check statement for if row or column index is invalid
         if (row >= ROWS || row < 0 || column >= COLUMNS || column < 0) {
         	//Debugging State
-            System.out.println("Invalid Disc Location - Try Again");
+            //System.out.println("Invalid Disc Location - Try Again");
         	return null;
         }
+        
+        // Debugging State
+        System.out.println("Checking Disc at Row: " + row + ", Column: " + column);
+
         
         //returns disc at specified part of shadow data structure
         return insertedDiscsArray[row][column];
     }
 
     //handles gameOver...Obviously
-
     //This method Handles checking the game state
     private void gameOver() {
     	
-    	//TODO Update Ai Winning Case
     	
     	//ternary operator (short-hand if-else): if isPlayerOneTurn True, assigns FirstPlayer to winner, else SecondPlayer is the winner
     	//similar to scheme: (if isPlayerOneTurn FirstPlayer SecondPlayer)
@@ -636,9 +668,13 @@ public class Controller implements Initializable {
             //ensuring the button clicked Exists and condition that checks if 'yes' was selected
             if (buttonClicked.isPresent() && buttonClicked.get() == yesButton ) {
                 // user chose YES so RESET the game
-                resetGame();
-                
+                try {
+					resetGame();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
             } else {
+            	logMove1("The Winner is " + winner);
                 // user chose NO 
                 Platform.exit();
                 //so Exit the Game
@@ -647,65 +683,63 @@ public class Controller implements Initializable {
         });
     }
     
-    //TODO add Disc constructor to include color so AI specifically drops a color
     /*this method creates a disc which, graphically will look like a circle
       has all properties of a Circle but extends with one more method */
     private static class Disc extends Circle {
 
     	//TODO Add File IO constructor to print disc info to file
-    	
     	//boolean of current player turn status
         private final boolean isPlayerOneMove;
-
-        //specificed constructor to take the boolean flag
-        public Disc(boolean isPlayerOneMove) {
-
-        	//this specified disc belongs to player one, boolean flag ensures property
+    	@SuppressWarnings("unused")
+		private final Color discColor; 
+        
+    	// Update Disc class constructor
+        private Disc(boolean isPlayerOneMove, Color discColor) {
             this.isPlayerOneMove = isPlayerOneMove;
-            
-            //graphically updating the disc radius, color, and position
+            this.discColor = discColor;
             setRadius(diameterOfCircle / 2);
-            setFill(isPlayerOneMove? Color.valueOf(discColor1): Color.valueOf(discColor2));
-            setCenterX(diameterOfCircle/2);
-            setCenterY(diameterOfCircle/2);
+            setFill(discColor);
+            setCenterX(diameterOfCircle / 2);
+            setCenterY(diameterOfCircle / 2);
         }
+
     }
     
-
-    @Override
-    /*
-     initialize() method is used in JavaFx framework to initialize the controller
+    /*initialize() method is used in JavaFx framework to initialize the controller
       after the root element is processed by the FXML Loader
       Called automatically by the FXML Loader after controller is set 
-    */
-    //this method will perform actions:
-    //Set up UI elements, variables, event handlers
-    //Overeide is the hook for setting up tasks
-    public void initialize(URL location, ResourceBundle resources) {
-    //TODO Host Project
-    	
-    //Notes::
-    //Set up UI
-    	
-    	//Open the log file
-    	try {
-    		logWriter = new PrintWriter(new FileWriter(LOG_FILE_PATH));
-    		logWriter.write("Game Log");
-    		
-    		logWriter.close();
-    	
-    	}catch (IOException e) {
-    		e.printStackTrace();
-    	}
-    	
-    	
-    }
     
-    //This method is going to log systematically to the file
-    private void logMove(String playerName, int col, int row) {
-    	if(logWriter != null) {
-    		logWriter.write("Player: " + playerName + " Played Position (Column, Row): (" + col + ", " + row);
-    	}
+      this method will perform actions:
+      Set up UI elements, variables, event handlers
+      Overeide is the hook for setting up tasks*/
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        try {
+            logWriterAlpha = new BufferedWriter(new FileWriter(LOG_FILE_PATH));
+            logWriterAlpha.write("Connect Four Log" + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void logMove1(String move) {
+        try {
+            if (logWriterAlpha != null) {
+                // Write the move data to the file
+                logWriterAlpha.write(move);
+                logWriterAlpha.newLine(); // Add a new line for each move
+
+                // Flush the writer to ensure the data is written immediately
+                logWriterAlpha.flush();
+            } else {
+                // Log a message or throw an exception to indicate that the writer is not properly initialized
+                System.err.println("Error: logWriterAlpha is not initialized");
+                // Alternatively, throw a new exception if appropriate for your application
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle the exception according to your application's needs
+        }
     }
 
 	public Object getMoveLog() {

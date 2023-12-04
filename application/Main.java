@@ -3,6 +3,9 @@ package application;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -52,11 +55,25 @@ public class Main extends Application {
         Menu fileMenu = new Menu("File");
 
         MenuItem newGame = new MenuItem("New game");
-        newGame.setOnAction(event -> controller.resetGame());
+        newGame.setOnAction(event -> {
+			try {
+				controller.resetGame();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 
         //explicitly reset game when pressed
         MenuItem resetGame = new MenuItem("Reset game");
-        resetGame.setOnAction(event -> controller.resetGame());
+        resetGame.setOnAction(event -> {
+			try {
+				controller.resetGame();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
         
         //TODO: Implement Move Log
         MenuItem getMoveLog = new MenuItem("Move Log");
