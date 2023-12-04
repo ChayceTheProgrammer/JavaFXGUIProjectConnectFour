@@ -111,7 +111,7 @@ public class Main extends Application {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Title: About Connect Four");
         alert.setHeaderText("Header: Sample Header Text - aboutConnect4");
-        alert.setContentText("Content: Content Text - aboutConnect4");
+        alert.setContentText("Content: As Seen On https://github.com/ChayceTheProgrammer/JavaFXGUIProjectConnectFour");
         alert.show();
     }
 

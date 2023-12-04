@@ -1,4 +1,0 @@
-Connect Four Log
-Player AI Moved Placed Piece at [6, 5]
-Player One Moved Placed Piece at [5, 5]
-Player AI Moved Placed Piece at [4, 5]

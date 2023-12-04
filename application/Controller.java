@@ -1,8 +1,6 @@
 package application;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -33,7 +31,7 @@ import javafx.util.Duration;
 
 public class Controller implements Initializable {
 	
-	//number of colums
+	//number of columns
     private static final int COLUMNS = 6;
     private static final int ROWS = 7;
     
@@ -86,9 +84,6 @@ public class Controller implements Initializable {
     //usually these may be a bit harder to access but this project is taking 6ever
     private BufferedWriter logWriterAlpha;
     
-    // Declare logData as a list of strings to store log entries
-    private List<String> logData = new ArrayList<>();
-    
     //Advanced AI
     // Define an enumeration for AI difficulty levels
     enum AiDifficulty {
@@ -132,7 +127,6 @@ public class Controller implements Initializable {
         		
         		//Set Ai Difficulty
         		AiDifficulty AiDiff = AiDifficulty.QUASIRANDOM;
-        	
         		
         		switch (AiDiff) {
         		case QUASIRANDOM:
@@ -156,7 +150,23 @@ public class Controller implements Initializable {
 	        		break;
 				
         		case THOUGHTFUL:
-					break;
+        			   // Calculate the best move 
+        		    int thoughtfulMove = calculateThoughtfulMove(insertedDiscsArray, isPlayerOneTurn);
+        		    
+        		    // Developer Debugging Tool
+        		    System.out.println("Thoughtful AiMoveColumn: " + thoughtfulMove);
+        		    
+        		    // Graphically cause the move to occur
+        		    // Run the graphical update on the JavaFX Application Thread
+        		    Platform.runLater(() -> {
+        		        Disc disc = new Disc(!isPlayerOneTurn, discColor2);
+        		        try {
+        		            insertDisc(disc, thoughtfulMove);
+        		        } catch (IOException e) {
+        		            e.printStackTrace();
+        		        }
+        		    });
+        		    break;
         		case ACTUAL_TRYHARD:
         			break;
 					
@@ -170,7 +180,12 @@ public class Controller implements Initializable {
         });
     }
     
-    private int getLastEmptyRow(int column) {
+    private int calculateThoughtfulMove(Disc[][] insertedDiscsArray2, boolean isPlayerOneTurn2) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	private int getLastEmptyRow(int column) {
         for (int row = ROWS - 1; row >= 0; row--) {
             if (getDiscIfPresent(row, column) == null) {
                 return row;
@@ -204,11 +219,11 @@ public class Controller implements Initializable {
         //creating a list of clickable columns
         List<Rectangle> rectangleList = createClickableColumns();
 
-        int rowIndex = 0;
-        for (Rectangle rectangle : rectangleList) {
-            rootGridPane.add(rectangle, 0, rowIndex);
-            rowIndex++;
+        //Add columns to window -> rootgridPane
+        for (Rectangle rectangle: rectangleList) {
+            rootGridPane.add(rectangle, 0, 1);
         }
+        
         //button for AI player
         aiButton.setText("Ai Player");
         
@@ -462,7 +477,6 @@ public class Controller implements Initializable {
        the current player's status is updated on the label.
       */
     private void insertDisc(Disc disc, int column) throws IOException {
-    	
         
     	//starts from the bottom row and iterates upward until it finds 
     	//the first empty slot in the specified column where the disc can be inserted.
@@ -534,6 +548,12 @@ public class Controller implements Initializable {
         	// Finally, when disc is dropped allow next player to insert disc.
         	// After the disc is dropped, it signals that the next player is allowed to insert a disc.
             isAllowedToInsert = true;
+            
+            //Checks if the current move has resulted in the end of the game. 
+            //If so, it triggers the game-over logic.
+            //Calls the gameEnded method with the current row and column as arguments. 
+            //This method is responsible for determining whether the game has reached 
+            //a conclusion based on the latest move.
 
             //switch player turn
             //works the same for Ai
@@ -562,12 +582,16 @@ public class Controller implements Initializable {
     
     // Constructor
     public Controller() {
+        // Initialize logWriterAlpha here
         try {
+            
             logWriterAlpha = new BufferedWriter(new FileWriter(LOG_FILE_PATH));
         } catch (IOException e) {
-            e.printStackTrace(); // Handle the exception according to your application's need
-            }
+            e.printStackTrace(); // Handle the exception according to your application's needs
         }
+
+        // Other initialization code...
+    }
     
     /*Defines a method named checkCombinations that takes a list of Point2D objects 
       as an argument and returns a boolean value*/
@@ -626,10 +650,15 @@ public class Controller implements Initializable {
     //This method Handles checking the game state
     private void gameOver() {
     	
+    	
     	//ternary operator (short-hand if-else): if isPlayerOneTurn True, assigns FirstPlayer to winner, else SecondPlayer is the winner
     	//similar to scheme: (if isPlayerOneTurn FirstPlayer SecondPlayer)
     	String winner = isPlayerOneTurn ? FirstPlayer : SecondPlayer;
+        
+        //Logging the Player
+        //TODO add file IO for logging purposes
         System.out.println("Winner is: " + winner);
+        //file io code
 
         //UI choice to give visual feedback to users
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -672,7 +701,6 @@ public class Controller implements Initializable {
     /*this method creates a disc which, graphically will look like a circle
       has all properties of a Circle but extends with one more method */
     private static class Disc extends Circle {
-
     	//boolean of current player turn status
         private final boolean isPlayerOneMove;
     	@SuppressWarnings("unused")
@@ -726,42 +754,9 @@ public class Controller implements Initializable {
             e.printStackTrace(); // Handle the exception according to your application's needs
         }
     }
-    public void logMoveData(String entry) {
-    	
-    }
+
+	public Object getMoveLog() {
+		return null;
+	}
     
-    public void saveGame(String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-			// Iterate over your log data and write it to the file
-            for (String logEntry : logData) {
-                writer.write(logEntry);
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void loadGame(String filePath) {
-        // Clear the current game state or initialize a new game
-        // Reset any variables or data structures used to track the game state
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Parse each line of the log and update the game state accordingly
-                // For example, extract player moves and apply them to the game
-                processLogEntry(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            // Handle the exception (show an error message, log it, etc.)
-        }
-    }
-
-    private void processLogEntry(String logEntry) {
-        // Implement logic to process each log entry and update the game state
-        // For example, extract player moves and apply them to the game
-    }
-
 }

@@ -2,6 +2,7 @@
 
 This is a JavaFX implementation of the classic Connect Four game. 
 The game features a graphical user interface, AI player, and log file functionality.
+Class CSCE314
 
 Tasks To Complete:
 -Sophisticated AI (Simple AI is Complete but works quasi-randomly)

@@ -1,4 +1,0 @@
-Connect Four Log
-Player Two Moved Placed Piece at [6, 2]
-Player One Moved Placed Piece at [6, 3]
-Player Two Moved Placed Piece at [6, 4]
