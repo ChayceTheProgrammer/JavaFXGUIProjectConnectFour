@@ -1,0 +1,9 @@
+Connect Four Log
+Player AI Moved Placed Piece at [6, 4]
+Player One Moved Placed Piece at [5, 4]
+Player AI Moved Placed Piece at [6, 5]
+Player One Moved Placed Piece at [6, 0]
+Player AI Moved Placed Piece at [5, 5]
+Player One Moved Placed Piece at [4, 5]
+Player AI Moved Placed Piece at [3, 5]
+The Winner is Player One

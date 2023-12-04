@@ -1,6 +1,8 @@
 package application;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -84,10 +86,12 @@ public class Controller implements Initializable {
     //usually these may be a bit harder to access but this project is taking 6ever
     private BufferedWriter logWriterAlpha;
     
+    // Declare logData as a list of strings to store log entries
+    private List<String> logData = new ArrayList<>();
+    
     //Advanced AI
     // Define an enumeration for AI difficulty levels
     enum AiDifficulty {
-    	//TODO Add more difficulty levels as needed
         QUASIRANDOM,   //Implemented
         THOUGHTFUL,    //In development
         ACTUAL_TRYHARD //Future
@@ -119,8 +123,6 @@ public class Controller implements Initializable {
     	//Developer Note: Visual Console FeedBack
     	System.out.println("AI Mode Activated");
     	
-    	//TODO add levels of AI-difficulty with a 'switch' Statement
-    	
         //what happens when button is clicked
         aiButton.setOnAction(event -> {
         	
@@ -130,6 +132,7 @@ public class Controller implements Initializable {
         		
         		//Set Ai Difficulty
         		AiDifficulty AiDiff = AiDifficulty.QUASIRANDOM;
+        	
         		
         		switch (AiDiff) {
         		case QUASIRANDOM:
@@ -201,11 +204,11 @@ public class Controller implements Initializable {
         //creating a list of clickable columns
         List<Rectangle> rectangleList = createClickableColumns();
 
-        //Add columns to window -> rootgridPane
-        for (Rectangle rectangle: rectangleList) {
-            rootGridPane.add(rectangle, 0, 1);
+        int rowIndex = 0;
+        for (Rectangle rectangle : rectangleList) {
+            rootGridPane.add(rectangle, 0, rowIndex);
+            rowIndex++;
         }
-        
         //button for AI player
         aiButton.setText("Ai Player");
         
@@ -459,6 +462,7 @@ public class Controller implements Initializable {
        the current player's status is updated on the label.
       */
     private void insertDisc(Disc disc, int column) throws IOException {
+    	
         
     	//starts from the bottom row and iterates upward until it finds 
     	//the first empty slot in the specified column where the disc can be inserted.
@@ -530,19 +534,10 @@ public class Controller implements Initializable {
         	// Finally, when disc is dropped allow next player to insert disc.
         	// After the disc is dropped, it signals that the next player is allowed to insert a disc.
             isAllowedToInsert = true;
-            
-            //Checks if the current move has resulted in the end of the game. 
-            //If so, it triggers the game-over logic.
-            //Calls the gameEnded method with the current row and column as arguments. 
-            //This method is responsible for determining whether the game has reached 
-            //a conclusion based on the latest move.
-
 
             //switch player turn
             //works the same for Ai
             isPlayerOneTurn = !isPlayerOneTurn;
-            
-            //TODO Update Text for Case when Ai plays and not SecondPlayer If-Else
             
             // Updates the graphical representation of the current player's status on the label (playerNameLabel).
             playerNameLabel.setText(isPlayerOneTurn? FirstPlayer: SecondPlayer);
@@ -567,16 +562,12 @@ public class Controller implements Initializable {
     
     // Constructor
     public Controller() {
-        // Initialize logWriterAlpha here
         try {
-            
             logWriterAlpha = new BufferedWriter(new FileWriter(LOG_FILE_PATH));
         } catch (IOException e) {
-            e.printStackTrace(); // Handle the exception according to your application's needs
+            e.printStackTrace(); // Handle the exception according to your application's need
+            }
         }
-
-        // Other initialization code...
-    }
     
     /*Defines a method named checkCombinations that takes a list of Point2D objects 
       as an argument and returns a boolean value*/
@@ -635,15 +626,10 @@ public class Controller implements Initializable {
     //This method Handles checking the game state
     private void gameOver() {
     	
-    	
     	//ternary operator (short-hand if-else): if isPlayerOneTurn True, assigns FirstPlayer to winner, else SecondPlayer is the winner
     	//similar to scheme: (if isPlayerOneTurn FirstPlayer SecondPlayer)
     	String winner = isPlayerOneTurn ? FirstPlayer : SecondPlayer;
-        
-        //Logging the Player
-        //TODO add file IO for logging purposes
         System.out.println("Winner is: " + winner);
-        //file io code
 
         //UI choice to give visual feedback to users
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -687,7 +673,6 @@ public class Controller implements Initializable {
       has all properties of a Circle but extends with one more method */
     private static class Disc extends Circle {
 
-    	//TODO Add File IO constructor to print disc info to file
     	//boolean of current player turn status
         private final boolean isPlayerOneMove;
     	@SuppressWarnings("unused")
@@ -741,10 +726,42 @@ public class Controller implements Initializable {
             e.printStackTrace(); // Handle the exception according to your application's needs
         }
     }
-
-	public Object getMoveLog() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public void logMoveData(String entry) {
+    	
+    }
     
+    public void saveGame(String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+			// Iterate over your log data and write it to the file
+            for (String logEntry : logData) {
+                writer.write(logEntry);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void loadGame(String filePath) {
+        // Clear the current game state or initialize a new game
+        // Reset any variables or data structures used to track the game state
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Parse each line of the log and update the game state accordingly
+                // For example, extract player moves and apply them to the game
+                processLogEntry(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle the exception (show an error message, log it, etc.)
+        }
+    }
+
+    private void processLogEntry(String logEntry) {
+        // Implement logic to process each log entry and update the game state
+        // For example, extract player moves and apply them to the game
+    }
+
 }

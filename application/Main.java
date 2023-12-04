@@ -59,7 +59,6 @@ public class Main extends Application {
 			try {
 				controller.resetGame();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
@@ -70,21 +69,16 @@ public class Main extends Application {
 			try {
 				controller.resetGame();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
         
-        //TODO: Implement Move Log
-        MenuItem getMoveLog = new MenuItem("Move Log");
-        getMoveLog.setOnAction(event -> controller.getMoveLog());
-
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
         
         MenuItem exitGame = new MenuItem("Exit game");
         exitGame.setOnAction(event -> exitGame());
 
-        fileMenu.getItems().addAll(newGame, resetGame, separatorMenuItem, exitGame, getMoveLog);
+        fileMenu.getItems().addAll(newGame, resetGame, separatorMenuItem, exitGame);
 
         // Help Menu
         Menu helpMenu = new Menu("Help");
